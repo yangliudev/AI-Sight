@@ -3,34 +3,96 @@ import {
   Text,
   StyleSheet,
   Image,
+  FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
+
+const generateRandomIds = (count, maxId = 1084) => {
+  const ids = new Set();
+  while (ids.size < count) {
+    ids.add(Math.floor(Math.random() * maxId));
+  }
+  return Array.from(ids);
+};
 
 export default function HomeScreen() {
-  const [fact, setFact] = useState("");
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchFact = () => {
+  const fetchRandomImages = async () => {
     setLoading(true);
-    fetch("http://numbersapi.com/random/trivia?json")
-      .then((response) => response.json())
-      .then((data) => {
-        setFact(data.text);
-        setLoading(false);
-      })
-      .catch(() => {
-        setFact("Failed to load a trivia fact.");
-        setLoading(false);
-      });
+    try {
+      const randomIds = generateRandomIds(5); // 5 unique image IDs
+      const randomImageList = await Promise.all(
+        randomIds.map(async (id) => {
+          const response = await fetch(`https://picsum.photos/id/${id}/info`);
+          const data = await response.json();
+          return {
+            id,
+            url: `https://picsum.photos/id/${id}/800/500`,
+            download_url: `https://picsum.photos/id/${id}/1920/1080`,
+            author: data.author,
+            width: data.width,
+            height: data.height,
+          };
+        })
+      );
+      setImages(randomImageList);
+    } catch {
+      setImages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadImage = async (url, id) => {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission required",
+        "Storage permission is needed to download images."
+      );
+      return;
+    }
+
+    try {
+      const fileUri = `${FileSystem.documentDirectory}${id}.jpg`;
+      const downloaded = await FileSystem.downloadAsync(url, fileUri);
+      await MediaLibrary.saveToLibraryAsync(downloaded.uri);
+      Alert.alert("Downloaded", "Image saved to gallery.");
+    } catch {
+      Alert.alert("Error", "Failed to download image.");
+    }
   };
 
   useEffect(() => {
-    fetchFact(); // Fetch a fact on initial load
+    fetchRandomImages();
   }, []);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <Image source={{ uri: item.url }} style={styles.image} />
+      <Text style={styles.detail}>ID: {item.id}</Text>
+      <Text style={styles.detail}>Author: {item.author}</Text>
+      <Text style={styles.detail}>
+        Dimensions: {item.width}x{item.height}
+      </Text>
+      <TouchableOpacity
+        style={styles.downloadBtn}
+        onPress={() => downloadImage(item.download_url, item.id)}
+      >
+        <Ionicons name="download-outline" size={20} color="white" />
+        <Text style={styles.downloadText}>Download</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.container}>
@@ -44,32 +106,28 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View style={styles.content}>
-        <Image
-          source={require("@/assets/images/gp.jpeg")}
-          style={styles.logo}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#fff"
+          style={{ marginTop: 100 }}
         />
+      ) : (
+        <FlatList
+          data={images}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
 
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Did you know?</Text>
-          <View style={styles.factContainer}>
-            {loading ? (
-              <ActivityIndicator size="large" color="#fff" />
-            ) : (
-              <Text style={styles.fact}>{fact}</Text>
-            )}
-          </View>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={fetchFact}
-            disabled={loading}
-          >
-            <Ionicons name="refresh-circle" size={28} color="white" />
-            <Text style={styles.buttonText}>New Fact</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TouchableOpacity
+        style={styles.refreshButton}
+        onPress={fetchRandomImages}
+      >
+        <Ionicons name="refresh" size={20} color="white" />
+        <Text style={styles.refreshText}>Load New</Text>
+      </TouchableOpacity>
     </LinearGradient>
   );
 }
@@ -77,8 +135,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingTop: 90,
     paddingHorizontal: 20,
   },
   header: {
@@ -93,77 +150,68 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   appName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     color: "white",
   },
   settingsIcon: {
-    position: "absolute",
-    right: -15,
     top: 40,
+    right: -15,
   },
-  content: {
-    alignItems: "center",
-    marginTop: 100,
-  },
-  logo: {
-    width: 160,
-    height: 160,
-    borderRadius: 9999,
-    marginBottom: 25,
-    borderWidth: 3,
-    borderColor: "white",
-  },
-  subtitle: {
-    fontSize: 20,
-    color: "#EEE",
-    textAlign: "left",
-    fontWeight: "600",
-    marginBottom: 15,
+  listContainer: {
+    paddingBottom: 140,
   },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)", // Transparent card
-    borderRadius: 20, // Rounded corners
-    padding: 25,
-    width: "85%", // Adjust width for card
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 20,
+    marginBottom: 25,
+    padding: 16,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
   },
-  factContainer: {
-    marginTop: 10,
-    // backgroundColor: "rgba(255, 255, 255, 0.1)",
-    padding: 20,
-    borderRadius: 12,
-    alignItems: "center",
-    minHeight: 80,
-    maxWidth: "90%",
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 14,
+    marginBottom: 12,
   },
-  fact: {
-    fontSize: 18,
-    color: "white",
-    textAlign: "center",
-    fontWeight: "500",
+  detail: {
+    color: "#fff",
+    fontSize: 14,
+    marginTop: 2,
   },
-  button: {
+  downloadBtn: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(99, 23, 169, 0.7)", // Semi-transparent purple
-    paddingVertical: 12,
+    marginTop: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 30,
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    alignItems: "center",
   },
-  buttonText: {
+  downloadText: {
     color: "white",
+    marginLeft: 10,
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  refreshButton: {
+    position: "absolute",
+    bottom: 40,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+  },
+  refreshText: {
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
     marginLeft: 10,
