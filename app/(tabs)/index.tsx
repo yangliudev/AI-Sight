@@ -107,11 +107,7 @@ export default function HomeScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#fff"
-          style={{ marginTop: 100 }}
-        />
+        <ActivityIndicator size="large" color="#fff" style={styles.loader} />
       ) : (
         <FlatList
           data={images}
@@ -137,34 +133,40 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 90,
     paddingHorizontal: 20,
+    justifyContent: "flex-start",
   },
   header: {
     flexDirection: "row",
-    width: "100%",
-    paddingTop: 40,
-    paddingHorizontal: 20,
+    alignItems: "center",
     justifyContent: "space-between",
+    width: "100%",
     position: "absolute",
-    top: 0,
-    left: 0,
+    top: 40,
+    left: 20,
+    right: 20,
     zIndex: 1,
   },
   appName: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
     color: "white",
+    textAlign: "left",
   },
   settingsIcon: {
-    top: 40,
-    right: -15,
+    paddingTop: 2,
+    marginRight: 0,
+  },
+  loader: {
+    marginTop: 100,
   },
   listContainer: {
-    paddingBottom: 140,
+    paddingBottom: 120,
+    marginTop: 120,
   },
   card: {
     backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: 20,
-    marginBottom: 25,
+    borderRadius: 16,
+    marginBottom: 20,
     padding: 16,
     alignItems: "center",
     shadowColor: "#000",
@@ -176,13 +178,14 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 200,
-    borderRadius: 14,
+    borderRadius: 12,
     marginBottom: 12,
   },
   detail: {
     color: "#fff",
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: "center",
   },
   downloadBtn: {
     flexDirection: "row",
