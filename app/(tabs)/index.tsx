@@ -34,30 +34,41 @@ export default function HomeScreen() {
 
   return (
     <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.appName}>AI Sight</Text>
+        <Ionicons
+          name="settings-outline"
+          size={30}
+          color="white"
+          style={styles.settingsIcon}
+        />
+      </View>
+
       <View style={styles.content}>
         <Image
           source={require("@/assets/images/gp.jpeg")}
           style={styles.logo}
         />
-        <Text style={styles.title}>Guinea Pigs</Text>
-        <Text style={styles.subtitle}>Did you know?</Text>
 
-        <View style={styles.factContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#fff" />
-          ) : (
-            <Text style={styles.fact}>{fact}</Text>
-          )}
+        <View style={styles.card}>
+          <Text style={styles.subtitle}>Did you know?</Text>
+          <View style={styles.factContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#fff" />
+            ) : (
+              <Text style={styles.fact}>{fact}</Text>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={fetchFact}
+            disabled={loading}
+          >
+            <Ionicons name="refresh-circle" size={28} color="white" />
+            <Text style={styles.buttonText}>New Fact</Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={fetchFact}
-          disabled={loading}
-        >
-          <Ionicons name="refresh-circle" size={28} color="white" />
-          <Text style={styles.buttonText}>New Fact</Text>
-        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
@@ -70,35 +81,61 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
   },
-  content: {
-    alignItems: "center",
+  header: {
+    flexDirection: "row",
+    width: "100%",
+    paddingTop: 40,
+    paddingHorizontal: 20,
+    justifyContent: "space-between",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 1,
   },
-  logo: {
-    width: 160, // Increased size
-    height: 160, // Increased size
-    borderRadius: 9999, // Makes it fully round
-    marginBottom: 25,
-    borderWidth: 3,
-    borderColor: "white", // Adds a clean border
-  },
-  title: {
-    fontSize: 42,
+  appName: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "white",
-    textAlign: "center",
-    letterSpacing: 1.5,
-    marginBottom: 10,
+  },
+  settingsIcon: {
+    position: "absolute",
+    right: -15,
+    top: 40,
+  },
+  content: {
+    alignItems: "center",
+    marginTop: 100,
+  },
+  logo: {
+    width: 160,
+    height: 160,
+    borderRadius: 9999,
+    marginBottom: 25,
+    borderWidth: 3,
+    borderColor: "white",
   },
   subtitle: {
     fontSize: 20,
     color: "#EEE",
-    textAlign: "center",
+    textAlign: "left",
     fontWeight: "600",
     marginBottom: 15,
   },
+  card: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)", // Transparent card
+    borderRadius: 20, // Rounded corners
+    padding: 25,
+    width: "85%", // Adjust width for card
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   factContainer: {
     marginTop: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    // backgroundColor: "rgba(255, 255, 255, 0.1)",
     padding: 20,
     borderRadius: 12,
     alignItems: "center",
@@ -114,7 +151,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#6317a9",
+    backgroundColor: "rgba(99, 23, 169, 0.7)", // Semi-transparent purple
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
