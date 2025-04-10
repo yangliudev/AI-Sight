@@ -61,10 +61,7 @@ export default function TabTwoScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={["#0f2027", "#203a43", "#2c5364"]}
-      style={styles.container}
-    >
+    <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Ionicons name="image-outline" size={40} color="#fff" />
@@ -116,63 +113,77 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 70, // Adjusted to prevent title cut-off
+    paddingHorizontal: 20,
+    justifyContent: "flex-start",
   },
   scrollContainer: {
-    padding: 20,
-    alignItems: "center",
+    paddingBottom: 120,
+    marginTop: 120,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    justifyContent: "center",
+    width: "100%",
+    top: 40,
+    left: 10,
+    right: 20,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
+    color: "white",
     marginLeft: 10,
+    textAlign: "center", // Center the title
   },
   description: {
     fontSize: 16,
-    color: "#fff",
-    marginBottom: 10,
+    color: "#EEE",
+    marginTop: 80,
     textAlign: "center",
   },
   input: {
     width: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
     fontSize: 16,
-    color: "#fff",
+    color: "#FFF",
     textAlignVertical: "top",
     minHeight: 80,
-    marginBottom: 15,
+    marginTop: 15,
+    marginBottom: 20,
   },
   button: {
-    backgroundColor: "#4caf50",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    backgroundColor: "rgba(99, 23, 169, 0.9)", // Darker button color for better visibility
+    paddingVertical: 16, // Increased padding for a better button height
+    paddingHorizontal: 32,
     borderRadius: 30,
-    elevation: 3,
-    marginBottom: 20,
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: "center", // Align the text in the center
   },
   buttonText: {
     fontSize: 18,
-    color: "#fff",
+    color: "white",
     fontWeight: "bold",
   },
   imageWrapper: {
     marginTop: 20,
     alignItems: "center",
     backgroundColor: "#ffffff22",
-    padding: 10,
+    padding: 16,
     borderRadius: 16,
   },
   previewText: {
     fontSize: 16,
-    color: "#fff",
-    marginBottom: 10,
+    color: "#EEE",
+    marginBottom: 12,
     fontWeight: "600",
   },
   image: {

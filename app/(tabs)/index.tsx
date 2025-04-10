@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 120,
-    marginTop: 120,
+    marginTop: 10,
   },
   card: {
     backgroundColor: "rgba(255, 255, 255, 0.15)",
