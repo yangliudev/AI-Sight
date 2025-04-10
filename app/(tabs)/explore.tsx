@@ -6,65 +6,109 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  Image,
+  Alert,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-
 import { HUGGING_FACE_API_KEY } from "@env";
 
-const HF_MODEL = "facebook/bart-large-cnn";
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function TabTwoScreen() {
-  console.log(HUGGING_FACE_API_KEY);
   const [inputText, setInputText] = useState("");
-  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
 
-  const fetchSummary = async () => {
-    if (!inputText.trim()) return;
-    setLoading(true);
+  const query = async (data) => {
     const response = await fetch(
-      `https://api-inference.huggingface.co/models/${HUGGING_FACE_API_KEY}`,
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${HUGGING_FACE_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ inputs: inputText }),
+        method: "POST",
+        body: JSON.stringify(data),
       }
     );
-    const data = await response.json();
-    setSummary(data[0]?.summary_text || "No summary generated.");
+    return await response.blob();
+  };
+
+  const blobToBase64 = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+
+  const generateImage = async () => {
+    if (!inputText.trim()) return;
+    setLoading(true);
+    try {
+      const blob = await query({ inputs: inputText });
+      const base64 = await blobToBase64(blob);
+      setImageUri(base64); // React Native <Image> accepts base64
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to generate image.");
+      setImageUri(null);
+    }
     setLoading(false);
   };
 
   return (
-    <LinearGradient colors={["#6a11cb", "#2575fc"]} style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="sparkles" size={50} color="#fff" />
-        <Text style={styles.title}>AI-Powered Summarizer</Text>
-      </View>
-      <Text style={styles.description}>Enter text to summarize:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Type your text here..."
-        placeholderTextColor="#ccc"
-        multiline
-        onChangeText={setInputText}
-        value={inputText}
-      />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={fetchSummary}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Loading..." : "Summarize Text"}
-        </Text>
-      </TouchableOpacity>
-      {loading && <ActivityIndicator size="large" color="#fff" />}
-      {summary ? <Text style={styles.summary}>{summary}</Text> : null}
+    <LinearGradient
+      colors={["#0f2027", "#203a43", "#2c5364"]}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.header}>
+          <Ionicons name="image-outline" size={40} color="#fff" />
+          <Text style={styles.title}>AI Image Generator</Text>
+        </View>
+
+        <Text style={styles.description}>Describe an image to generate:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g. Astronaut riding a horse"
+          placeholderTextColor="#ccc"
+          multiline
+          onChangeText={setInputText}
+          value={inputText}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={generateImage}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Generating..." : "Generate Image"}
+          </Text>
+        </TouchableOpacity>
+
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color="#fff"
+            style={{ marginTop: 20 }}
+          />
+        )}
+
+        {imageUri && (
+          <View style={styles.imageWrapper}>
+            <Text style={styles.previewText}>Generated Image:</Text>
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          </View>
+        )}
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -72,9 +116,10 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  },
+  scrollContainer: {
     padding: 20,
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
@@ -82,7 +127,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#fff",
     marginLeft: 10,
@@ -90,37 +135,49 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     color: "#fff",
-    textAlign: "center",
     marginBottom: 10,
+    textAlign: "center",
   },
   input: {
-    width: "90%",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     borderRadius: 10,
-    padding: 10,
+    padding: 12,
     fontSize: 16,
     color: "#fff",
     textAlignVertical: "top",
-    minHeight: 100,
+    minHeight: 80,
     marginBottom: 15,
   },
   button: {
-    backgroundColor: "#ff9800",
+    backgroundColor: "#4caf50",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 25,
+    borderRadius: 30,
     elevation: 3,
+    marginBottom: 20,
   },
   buttonText: {
     fontSize: 18,
     color: "#fff",
     fontWeight: "bold",
   },
-  summary: {
+  imageWrapper: {
     marginTop: 20,
+    alignItems: "center",
+    backgroundColor: "#ffffff22",
+    padding: 10,
+    borderRadius: 16,
+  },
+  previewText: {
     fontSize: 16,
     color: "#fff",
-    textAlign: "center",
-    paddingHorizontal: 15,
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+  image: {
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_WIDTH * 0.9,
+    borderRadius: 12,
   },
 });
