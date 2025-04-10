@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,12 +25,13 @@ const generateRandomIds = (count, maxId = 1084) => {
 
 export default function HomeScreen() {
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchRandomImages = async () => {
     setLoading(true);
     try {
-      const randomIds = generateRandomIds(5); // 5 unique image IDs
+      const randomIds = generateRandomIds(5);
       const randomImageList = await Promise.all(
         randomIds.map(async (id) => {
           const response = await fetch(`https://picsum.photos/id/${id}/info`);
@@ -49,6 +51,7 @@ export default function HomeScreen() {
       setImages([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -106,24 +109,27 @@ export default function HomeScreen() {
         />
       </View>
 
-      {loading ? (
+      {initialLoading ? (
         <ActivityIndicator size="large" color="#fff" style={styles.loader} />
       ) : (
-        <FlatList
-          data={images}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-        />
+        <>
+          <Text style={styles.swipeHint}>↓ Swipe down to refresh</Text>
+          <FlatList
+            data={images}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={fetchRandomImages}
+                colors={["#fff"]}
+                tintColor="#fff"
+              />
+            }
+          />
+        </>
       )}
-
-      <TouchableOpacity
-        style={styles.refreshButton}
-        onPress={fetchRandomImages}
-      >
-        <Ionicons name="refresh" size={20} color="white" />
-        <Text style={styles.refreshText}>Load New</Text>
-      </TouchableOpacity>
     </LinearGradient>
   );
 }
@@ -163,8 +169,15 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     marginTop: 10,
   },
+  swipeHint: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 14,
+    marginBottom: 10,
+    opacity: 0.8,
+  },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    backgroundColor: "#401367",
     borderRadius: 16,
     marginBottom: 20,
     padding: 16,
@@ -201,22 +214,5 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontWeight: "600",
     fontSize: 16,
-  },
-  refreshButton: {
-    position: "absolute",
-    bottom: 40,
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-  },
-  refreshText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
   },
 });
