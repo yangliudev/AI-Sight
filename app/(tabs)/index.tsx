@@ -15,6 +15,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 
+import { useRouter } from "expo-router";
+
 const generateRandomIds = (count, maxId = 1084) => {
   const ids = new Set();
   while (ids.size < count) {
@@ -27,6 +29,8 @@ export default function HomeScreen() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+
+  const router = useRouter();
 
   const fetchRandomImages = async () => {
     setLoading(true);
@@ -106,6 +110,7 @@ export default function HomeScreen() {
           size={30}
           color="white"
           style={styles.settingsIcon}
+          onPress={() => router.navigate("/home/settings")}
         />
       </View>
 
