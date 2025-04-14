@@ -25,7 +25,7 @@ A mobile application built with **Expo** and **React Native** that combines **ra
 
 > The app uses the **Hugging Face free tier**, which has a strict monthly usage cap of **$0.10**.
 
-- After exceeding this quota, **AI captioning will be disabled** until the beginning of the next billing cycle.
+- After exceeding this quota, **AI image generation will be disabled** until the beginning of the next billing cycle.
 - The image fetching from Picsum will continue to work as it does not incur costs.
 
 ---
@@ -67,7 +67,7 @@ npx expo start
 
 1. The home page loads random images from `https://picsum.photos/`.
 2. The image gen page uses Hugging Face’s `FLUX.1-dev` model via the Inference API.
-3. Dynamic download links are made avaiable to the user for images that they wish to save.
+3. Dynamic download links are made available to the user for images that they wish to save.
 
 ---
 
