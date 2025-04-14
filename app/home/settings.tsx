@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   section: {
-    marginTop: 100,
+    marginTop: 40,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 16,
     padding: 20,

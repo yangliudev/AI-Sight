@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -11,9 +11,9 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
+import * as MediaLibrary from "expo-media-library";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { HUGGING_FACE_API_KEY } from "@env";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -21,13 +21,20 @@ export default function TabTwoScreen() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState(null);
+  const [mediaPermission, requestPermission] = MediaLibrary.usePermissions();
+
+  useEffect(() => {
+    if (!mediaPermission?.granted) {
+      requestPermission();
+    }
+  }, []);
 
   const query = async (data) => {
     const response = await fetch(
       "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
       {
         headers: {
-          Authorization: `Bearer ${HUGGING_FACE_API_KEY}`,
+          Authorization: `Bearer ${process.env.EXPO_PUBLIC_HF_KEY}`,
           "Content-Type": "application/json",
         },
         method: "POST",
@@ -48,16 +55,31 @@ export default function TabTwoScreen() {
   const generateImage = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
+    setImageUri(null);
     try {
       const blob = await query({ inputs: inputText });
       const base64 = await blobToBase64(blob);
-      setImageUri(base64); // React Native <Image> accepts base64
+      setImageUri(base64);
     } catch (err) {
       console.error(err);
       Alert.alert("Error", "Failed to generate image.");
-      setImageUri(null);
     }
     setLoading(false);
+  };
+
+  const downloadImage = async () => {
+    if (!imageUri || !mediaPermission?.granted) return;
+    try {
+      const base64Data = imageUri.split("data:image/png;base64,")[1];
+      const fileUri = MediaLibrary.createAssetAsync(
+        `data:image/png;base64,${base64Data}`
+      );
+      await fileUri;
+      Alert.alert("Success", "Image saved to your gallery.");
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to save image.");
+    }
   };
 
   return (
@@ -71,40 +93,59 @@ export default function TabTwoScreen() {
         <Text style={styles.description}>Describe an image to generate:</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Astronaut riding a horse"
+          placeholder="e.g. A guinea pig wearing sunglasses"
           placeholderTextColor="#ccc"
           multiline
           onChangeText={setInputText}
           value={inputText}
         />
+
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={generateImage}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
-            {loading ? "Generating..." : "Generate Image"}
-          </Text>
+          <LinearGradient
+            colors={["#9b23ea", "#6a11cb"]}
+            style={styles.gradientButton}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <View style={styles.buttonContent}>
+                <Ionicons name="sparkles" size={22} color="#fff" />
+                <Text style={styles.buttonText}>Generate Image</Text>
+              </View>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color="#fff"
-            style={{ marginTop: 20 }}
-          />
-        )}
-
-        {imageUri && (
-          <View style={styles.imageWrapper}>
-            <Text style={styles.previewText}>Generated Image:</Text>
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.image}
-              resizeMode="contain"
-            />
-          </View>
-        )}
+        <View style={styles.imageContainer}>
+          {loading && (
+            <Text style={styles.infoText}>
+              Please wait, generating image...
+            </Text>
+          )}
+          {imageUri && (
+            <>
+              <Text style={styles.previewText}>Generated Image:</Text>
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+              <TouchableOpacity
+                style={styles.downloadButton}
+                onPress={downloadImage}
+              >
+                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Text style={styles.downloadText}>Download</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </ScrollView>
     </LinearGradient>
   );
@@ -113,7 +154,7 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 70, // Adjusted to prevent title cut-off
+    paddingTop: 70,
     paddingHorizontal: 20,
     justifyContent: "flex-start",
   },
@@ -127,15 +168,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     top: 40,
-    left: 10,
-    right: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     color: "white",
     marginLeft: 10,
-    textAlign: "center", // Center the title
+    textAlign: "center",
   },
   description: {
     fontSize: 16,
@@ -156,29 +195,37 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "rgba(99, 23, 169, 0.9)", // Darker button color for better visibility
-    paddingVertical: 16, // Increased padding for a better button height
+    marginTop: 20,
+    borderRadius: 30,
+    overflow: "hidden",
+  },
+  gradientButton: {
+    paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 30,
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: "center", // Align the text in the center
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   buttonText: {
     fontSize: 18,
     color: "white",
     fontWeight: "bold",
+    marginLeft: 8,
   },
-  imageWrapper: {
-    marginTop: 20,
+  imageContainer: {
+    marginTop: 30,
     alignItems: "center",
-    backgroundColor: "#ffffff22",
-    padding: 16,
-    borderRadius: 16,
+    minHeight: SCREEN_WIDTH * 0.9 + 80,
+    justifyContent: "center",
   },
   previewText: {
     fontSize: 16,
@@ -186,9 +233,30 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: "600",
   },
+  infoText: {
+    color: "#fff",
+    fontSize: 14,
+    fontStyle: "italic",
+    marginBottom: 20,
+  },
   image: {
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_WIDTH * 0.9,
     borderRadius: 12,
+  },
+  downloadButton: {
+    flexDirection: "row",
+    marginTop: 14,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: "center",
+    gap: 8,
+  },
+  downloadText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
