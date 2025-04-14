@@ -14,6 +14,7 @@ import {
 import * as MediaLibrary from "expo-media-library";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -29,21 +30,6 @@ export default function TabTwoScreen() {
     }
   }, []);
 
-  const query = async (data) => {
-    const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.EXPO_PUBLIC_HF_KEY}`,
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify(data),
-      }
-    );
-    return await response.blob();
-  };
-
   const blobToBase64 = (blob) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -56,25 +42,78 @@ export default function TabTwoScreen() {
     if (!inputText.trim()) return;
     setLoading(true);
     setImageUri(null);
+
     try {
-      const blob = await query({ inputs: inputText });
+      const response = await fetch(
+        "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.EXPO_PUBLIC_HF_KEY}`,
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({ inputs: inputText }),
+        }
+      );
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType?.startsWith("image/")) {
+        const text = await response.text();
+        const json = JSON.parse(text);
+
+        if (
+          json.error &&
+          json.error.toLowerCase().includes("exceeded") &&
+          json.error.toLowerCase().includes("credits")
+        ) {
+          Alert.alert(
+            "Sorry!",
+            "The monthly token limit on image generation has been used up."
+          );
+        } else {
+          Alert.alert(
+            "Model Error",
+            json.error || "The model did not return an image."
+          );
+        }
+
+        setLoading(false);
+        return;
+      }
+
+      const blob = await response.blob();
       const base64 = await blobToBase64(blob);
       setImageUri(base64);
     } catch (err) {
       console.error(err);
       Alert.alert("Error", "Failed to generate image.");
     }
+
     setLoading(false);
   };
 
   const downloadImage = async () => {
     if (!imageUri || !mediaPermission?.granted) return;
+
     try {
-      const base64Data = imageUri.split("data:image/png;base64,")[1];
-      const fileUri = MediaLibrary.createAssetAsync(
-        `data:image/png;base64,${base64Data}`
-      );
-      await fileUri;
+      const matches = imageUri.match(/^data:(image\/[a-zA-Z]+);base64,/);
+      if (!matches || matches.length < 2) {
+        Alert.alert("Error", "Image format not supported.");
+        return;
+      }
+
+      const base64Data = imageUri.split(",")[1];
+      const ext = matches[1].split("/")[1];
+      const fileUri = FileSystem.cacheDirectory + `generated-image.${ext}`;
+
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const asset = await MediaLibrary.createAssetAsync(fileUri);
+      await MediaLibrary.createAlbumAsync("AI Images", asset, false);
+
       Alert.alert("Success", "Image saved to your gallery.");
     } catch (err) {
       console.error(err);
