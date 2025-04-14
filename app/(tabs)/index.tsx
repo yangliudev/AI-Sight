@@ -36,23 +36,32 @@ export default function HomeScreen() {
     setLoading(true);
     try {
       const randomIds = generateRandomIds(5);
+
       const randomImageList = await Promise.all(
         randomIds.map(async (id) => {
           const response = await fetch(`https://picsum.photos/id/${id}/info`);
           const data = await response.json();
+          const url = `https://picsum.photos/id/${id}/800/500`;
+          const download_url = `https://picsum.photos/id/${id}/1920/1080`;
+
+          // Prefetch image to cache
+          await Image.prefetch(url);
+
           return {
             id,
-            url: `https://picsum.photos/id/${id}/800/500`,
-            download_url: `https://picsum.photos/id/${id}/1920/1080`,
+            url,
+            download_url,
             author: data.author,
             width: data.width,
             height: data.height,
           };
         })
       );
+
       setImages(randomImageList);
     } catch {
-      setImages([]);
+      // Retry after short delay if failed
+      setTimeout(fetchRandomImages, 1500);
     } finally {
       setLoading(false);
       setInitialLoading(false);

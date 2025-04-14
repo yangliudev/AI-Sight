@@ -154,7 +154,8 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 70,
+    paddingTop: 20,
+    paddingBottom: 30,
     paddingHorizontal: 20,
     justifyContent: "flex-start",
   },
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
   downloadButton: {
     flexDirection: "row",
-    marginTop: 14,
+    marginTop: 20,
     backgroundColor: "rgba(255,255,255,0.2)",
     paddingVertical: 10,
     paddingHorizontal: 20,
