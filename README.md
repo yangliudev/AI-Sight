@@ -1,50 +1,91 @@
-# Welcome to your Expo app 👋
+# 📸 AI-Enhanced Image Generator App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile application built with **Expo** and **React Native** that combines **random images** from [Picsum Photos](https://picsum.photos/) with AI-generated image captions using [Hugging Face Inference API](https://huggingface.co/docs/inference-providers/en/providers/hf-inference).
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Features
 
-   ```bash
-   npm install
-   ```
+- 🖼️ Fetches high-quality random images from [Picsum Photos](https://picsum.photos/)
+- 🧠 Generates descriptive captions using Hugging Face's `black-forest-labs/FLUX.1-dev` model
+- ⚙️ Built with **Expo** and **React Native**
+- 🆓 Operates on **Hugging Face's free tier** (with limitations)
 
-2. Start the app
+---
 
-   ```bash
-    npx expo start
-   ```
+## 🛠️ Tech Stack
 
-In the output, you'll find options to open the app in a
+- **Framework:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+- **Image Source API:** [Picsum Photos](https://picsum.photos/)
+- **AI Caption Model:** [Hugging Face FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ⚠️ Usage Limits
 
-## Get a fresh project
+> The app uses the **Hugging Face free tier**, which has a strict monthly usage cap of **$0.10**.
 
-When you're ready, run:
+- After exceeding this quota, **AI captioning will be disabled** until the beginning of the next billing cycle.
+- The image fetching from Picsum will continue to work as it does not incur costs.
+
+---
+
+## 📦 Installation
+
+### 1. Clone the Repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Install Dependencies
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Setup Environment Variables
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Create a `.env` file in the root of your project:
 
-## Join the community
+```
+HUGGING_FACE_API_KEY=your_huggingface_api_key_here
+```
 
-Join our community of developers creating universal apps.
+> ⚠️ **Do not commit your `.env` file.** Make sure it's listed in `.gitignore`.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 4. Run the App
+
+```bash
+npx expo start
+```
+
+---
+
+## 🧪 How It Works
+
+1. The home page loads random images from `https://picsum.photos/`.
+2. The image gen page uses Hugging Face’s `FLUX.1-dev` model via the Inference API.
+3. Dynamic download links are made avaiable to the user for images that they wish to save.
+
+---
+
+## 📄 Notes
+
+- Hugging Face models may experience temporary latency or fail under high load—especially on free-tier limits.
+- Ensure your API key is valid and the `.env` file is correctly configured.
+- No user authentication or data storage is implemented in this version.
+
+---
+
+## 📝 License
+
+This project is released under the MIT License.
+
+---
+
+## 🙌 Acknowledgements
+
+- [Picsum Photos](https://picsum.photos/) for free image API
+- [Hugging Face](https://huggingface.co/) for cutting-edge AI model access
