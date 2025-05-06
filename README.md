@@ -1,8 +1,16 @@
-# 📸 AI-Enhanced Image Generator App
+# AI-Enhanced Image Generator App
 
-A mobile application built with **Expo** and **React Native** that combines **random images** from [Picsum Photos](https://picsum.photos/) with AI image generation using [Hugging Face Inference API](https://huggingface.co/docs/inference-providers/en/providers/hf-inference).
+A mobile application built with **Expo** and **React Native** that combines **random images** from [Picsum Photos](https://picsum.photos/) with AI image generation using the [Hugging Face Inference API](https://huggingface.co/docs/inference-providers/en/providers/hf-inference).
 
 ---
+
+## 📷 Screenshots
+
+![Home Page](https://github.com/yangliudev/AI-Sight/blob/main/google_play/home.png?raw=true)
+
+![AI Image Generation Page](https://github.com/yangliudev/AI-Sight/blob/main/google_play/image_gen.png?raw=true)
+
+--
 
 ## 🚀 Features
 
