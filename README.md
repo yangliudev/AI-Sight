@@ -6,11 +6,12 @@ A mobile application built with **Expo** and **React Native** that combines **ra
 
 ## 📷 Screenshots
 
-![Home Page](https://github.com/yangliudev/AI-Sight/blob/main/google_play/home.png?raw=true)
+<p align="center">
+  <img src="https://github.com/yangliudev/AI-Sight/blob/main/google_play/home.png?raw=true" alt="Home Page" width="45%" />
+  <img src="https://github.com/yangliudev/AI-Sight/blob/main/google_play/image_gen.png?raw=true" alt="AI Image Generation Page" width="45%" />
+</p>
 
-![AI Image Generation Page](https://github.com/yangliudev/AI-Sight/blob/main/google_play/image_gen.png?raw=true)
-
---
+---
 
 ## 🚀 Features
 
