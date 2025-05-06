@@ -56,35 +56,26 @@ export default function TabTwoScreen() {
         }
       );
 
-      const contentType = response.headers.get("content-type");
+      let contentType = response.headers.get("content-type");
 
-      if (!contentType?.startsWith("image/")) {
+      if (!contentType || contentType === "application/octet-stream") {
+        contentType = "image/jpeg"; // force correct MIME
+      }
+
+      if (!contentType.startsWith("image/")) {
         const text = await response.text();
         const json = JSON.parse(text);
-
-        if (
-          json.error &&
-          json.error.toLowerCase().includes("exceeded") &&
-          json.error.toLowerCase().includes("credits")
-        ) {
-          Alert.alert(
-            "Sorry!",
-            "The monthly token limit on image generation has been used up."
-          );
-        } else {
-          Alert.alert(
-            "Model Error",
-            json.error || "The model did not return an image."
-          );
-        }
-
+        Alert.alert(
+          "Model Error",
+          json.error || "The model did not return an image."
+        );
         setLoading(false);
         return;
       }
 
       const blob = await response.blob();
       const base64 = await blobToBase64(blob);
-      setImageUri(base64);
+      setImageUri(`data:${contentType};base64,${base64.split(",")[1]}`);
     } catch (err) {
       console.error(err);
       Alert.alert("Error", "Failed to generate image.");
