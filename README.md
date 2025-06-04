@@ -86,6 +86,20 @@ npx expo start
 - Ensure your API key is valid and the `.env` file is correctly configured.
 - No user authentication or data storage is implemented in this version.
 
+`https://docs.expo.dev/build/setup/`
+
+Preview build on Expo
+
+```bash
+eas build --profile preview
+```
+
+Production build on Expo
+
+```bash
+eas build --platform android
+```
+
 ---
 
 ## 📝 License
