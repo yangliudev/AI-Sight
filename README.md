@@ -106,6 +106,42 @@ Production build locally
 eas build --platform android --profile production --local
 ```
 
+## Recommended Method for Local Build
+
+If you're using a managed Expo app:
+
+```bash
+eas build:configure
+```
+
+and then run
+
+```bash
+npx expo prebuild
+```
+
+This will generate the missing android folder and native code, based on your app.json.
+
+⚠️ If you skip this, the local build won’t work because native code is missing.
+
+Next, cd to your /android folder and run the following for AAB file
+
+```bash
+./gradlew bundleRelease
+```
+
+or the following for APK file
+
+```bash
+./gradlew assembleRelease
+```
+
+Now we can install the apk on our emulator
+
+```bash
+adb install android/app/build/outputs/apk/release/app-release.apk
+```
+
 ---
 
 ## 📝 License
