@@ -32,7 +32,7 @@ A mobile application built with **Expo** and **React Native** that combines **ra
 
 ## ⚠️ Usage Limits
 
-> The app uses the **Hugging Face free tier**, which has a strict monthly usage cap of **$0.10**.
+> The app uses the **Hugging Face free tier** [here](https://huggingface.co/docs/inference-providers/en/pricing), which has a strict monthly usage cap of **$0.10**.
 
 - After exceeding this quota, **AI image generation will be disabled** until the beginning of the next billing cycle.
 - The image fetching from Picsum will continue to work as it does not incur costs.
