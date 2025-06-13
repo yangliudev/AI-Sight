@@ -100,6 +100,12 @@ Production build on Expo
 eas build --platform android
 ```
 
+Production build locally
+
+```bash
+eas build --platform android --profile production --local
+```
+
 ---
 
 ## 📝 License
